@@ -134,12 +134,14 @@ const handleRefreshToken = async (req, res) => {
       httpOnly: true,
       secure: true,
     });
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      secure: true,
-    });
+    // res.cookie("refreshToken", newRefreshToken, {
+    //   httpOnly: true,
+    //   secure: true,
+    // });
 
-    res.status(200).json({ message: "New access token issued" });
+    res
+      .status(200)
+      .json({ token: newAccessToken, message: "New access token issued" });
   } catch (error) {
     res.status(401).send("Could not refresh token");
   }
