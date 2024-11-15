@@ -1,11 +1,12 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { generateToken, sendVerificationEmail } = require("../data/utils");
-jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const jwt_simple = require("jwt-simple");
 
 const Register = async (req, res) => {
   const { username, password, email } = req.body;
+
   try {
     if (
       (await User.findOne({ username: username })) ||
@@ -99,11 +100,6 @@ const Login = async (req, res) => {
       httpOnly: true,
     });
 
-    res.cookie("accessToken", accessToken, {
-      withCredentials: true,
-      httpOnly: true,
-    });
-
     res.status(201).json({
       message: "User logged in successfully",
       success: true,
@@ -154,8 +150,6 @@ const Logout = async (req, res) => {
   res.clearCookie("refreshToken");
   res.status(200).json({ message: "User logged out successfully" });
 };
-
-// protected routes
 
 const changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;

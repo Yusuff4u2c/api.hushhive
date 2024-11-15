@@ -1,9 +1,9 @@
 const express = require("express");
-const connectDB = require("./data/db");
+const connectDB = require("./src/data/db");
 const helmet = require("helmet");
-const authRoute = require("./routes/AuthRoute");
-const messageRoute = require("./routes/MessageRoute");
-const userRoute = require("./routes/UserRoute");
+const authRoute = require("./src/routes/AuthRoute");
+const messageRoute = require("./src/routes/MessageRoute");
+const userRoute = require("./src/routes/UserRoute");
 const cookieParser = require("cookie-parser");
 
 require("dotenv").config();
