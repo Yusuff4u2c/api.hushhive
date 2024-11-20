@@ -8,11 +8,15 @@ const Register = async (req, res) => {
   const { username, password, email } = req.body;
 
   try {
-    if (
-      (await User.findOne({ username: username })) ||
-      (await User.findOne({ email: email }))
-    ) {
-      return res.status(400).send("Username or email already taken");
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }],
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        status: false,
+        message: "User already exists",
+      });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -21,39 +25,53 @@ const Register = async (req, res) => {
 
     const verificationResult = await sendVerificationEmail(email, user);
     if (!verificationResult.success) {
-      return res.status(400).send("Email not sent");
-    } else {
-      res
-        .status(201)
-        .send({ message: "User created successfully", success: true, user });
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send verification email",
+      });
     }
+
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      data: { user },
+    });
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 const VerifyEmail = async (req, res) => {
   const { token } = req.query;
   if (!token) {
-    return res.status(400).send("Invalid verification link");
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid verification link" });
   }
 
   try {
     const { id } = await jwt_simple.decode(token, process.env.JWT_SECRET);
-    console.log(id);
 
     const user = await User.findById(id);
     if (!user) {
-      return res.status(400).send("Invalid verification token");
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid verification token" });
     }
+
     if (user.isVerified) {
-      return res.status(400).send("Email already verified");
+      return res
+        .status(400)
+        .json({ success: false, message: "Email already verified" });
     }
+
     user.isVerified = true;
     await user.save();
-    res.status(200).send("Email verified successfully");
+    res
+      .status(200)
+      .json({ success: true, message: "Email verified successfully" });
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
@@ -61,24 +79,33 @@ const Login = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      throw new Error("Please provide email and password");
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide email and password" });
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      throw new Error("Invalid login details");
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid login details" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      throw new Error("Invalid login details");
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid login details" });
     }
 
     if (!user.isVerified) {
-      throw new Error("Email not verified");
+      return res
+        .status(400)
+        .json({ success: false, message: "Email not verified" });
     }
+
     const accessToken = generateToken({
       id: user._id,
       username: user.username,
@@ -91,6 +118,7 @@ const Login = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        tokenVersion: user.tokenVersion,
       },
       "7d"
     );
@@ -111,72 +139,106 @@ const Login = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
 const handleRefreshToken = async (req, res) => {
   const { refreshToken } = req.cookies;
-  if (!refreshToken) return res.status(401).send("No refresh token provided");
+  if (!refreshToken) {
+    return res
+      .status(401)
+      .json({ success: false, message: "No refresh token provided" });
+  }
 
   try {
     const payload = jwt.verify(refreshToken, process.env.JWT_SECRET);
+
+    const user = await User.findById(payload.id);
+
+    if (!user || user.tokenVersion !== payload.tokenVersion) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid refresh token" });
+    }
+
     const newAccessToken = generateToken(
-      { id: payload.id, username: payload.username, email: payload.email },
+      {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        tokenVersion: user.tokenVersion + 1,
+      },
       "15m"
     );
-    const newRefreshToken = generateToken(
-      { id: payload.id, username: payload.username, email: payload.email },
-      "7d"
-    );
 
-    res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: true,
+    user.tokenVersion += 1;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      accessToken: newAccessToken,
+      message: "New access token issued",
     });
-    // res.cookie("refreshToken", newRefreshToken, {
-    //   httpOnly: true,
-    //   secure: true,
-    // });
-
-    res
-      .status(200)
-      .json({ token: newAccessToken, message: "New access token issued" });
   } catch (error) {
-    res.status(401).send("Could not refresh token");
+    res
+      .status(401)
+      .json({ success: false, message: "Invalid or expired token." });
   }
 };
 
 const Logout = async (req, res) => {
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
-  res.status(200).json({ message: "User logged out successfully" });
+  try {
+    const { refreshToken } = req.cookies;
+
+    if (!refreshToken) {
+      return res
+        .status(204)
+        .json({ success: true, message: "User already logged out" });
+    }
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "User logged out successfully" });
+  } catch (error) {
+    console.error("Logout Error: ", error);
+    res.status(500).json({ success: false, message: "Logout failed" });
+  }
 };
 
 const changePassword = async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
-  console.log(req.body);
-  console.log(req.user);
+  const { newPassword } = req.body;
+  console.log("newPassword", newPassword);
+
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Access Denied: Log in to change password",
+    });
+  }
 
   try {
     const user = await User.findById(req.user.id);
-    console.log(user);
 
     if (!user) {
-      return res.status(400).send("User not found");
-    }
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) {
-      return res.status(400).send("Invalid password");
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
     }
     const passwordHash = await bcrypt.hash(newPassword, 10);
     user.password = passwordHash;
     user.tokenVersion += 1;
     await user.save();
 
-    res.status(200).send("Password changed successfully");
+    res
+      .status(200)
+      .json({ success: true, message: "Password changed successfully" });
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 

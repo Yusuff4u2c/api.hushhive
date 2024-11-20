@@ -7,7 +7,7 @@ const {
 const route = require("express").Router();
 
 route.get("/", getUsers);
-route.get("/:id", getUser);
+route.get("/:username", getUser);
 route.patch("/:id", updateUser);
 route.delete("/:id", deleteUser);
 

@@ -11,9 +11,12 @@ const getUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    res.status(200).json({ user });
+    const { username } = req.params;
+    console.log("params", req.params);
+
+    const user = await User.findOne({ username: username });
+    console.log(user);
+    res.status(200).json({ status: "success", user });
   } catch (error) {
     res.status(400).send(error.message);
   }

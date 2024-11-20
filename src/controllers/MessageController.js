@@ -1,9 +1,20 @@
 const Message = require("../models/Message");
+const User = require("../models/User");
 
 const CreateMessage = async (req, res) => {
   try {
-    const { message, receiverId } = req.body;
-    const newMessage = new Message({ message, receiverId });
+    const { message, username } = req.body;
+
+    const user = await User.findOne({ username: username });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    const newMessage = new Message({ message, receiverId: user._id });
     await newMessage.save();
     res.status(201).json({
       message: "Message created successfully",

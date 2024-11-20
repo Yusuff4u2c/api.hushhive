@@ -10,6 +10,8 @@ const userVerification = async (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
+  // console.log("token :", token);
+
   if (!token) return res.status(401).json("Access Denied: No token provided");
 
   try {
