@@ -22,9 +22,9 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-app.use("/auth", authRoute);
-app.use("/message", messageRoute);
-app.use("/user", userRoute);
+app.use("auth", authRoute);
+app.use("message", messageRoute);
+app.use("user", userRoute);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the chat app");
