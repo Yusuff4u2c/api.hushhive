@@ -24,6 +24,8 @@ const Register = async (req, res) => {
     await user.save();
 
     const verificationResult = await sendVerificationEmail(email, user);
+    console.log("verificationResult", verificationResult.success);
+
     if (!verificationResult.success) {
       return res.status(500).json({
         success: false,
@@ -33,8 +35,7 @@ const Register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
-      data: { user },
+      message: "User registered successfully. Proceed to log in.",
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -70,6 +71,36 @@ const VerifyEmail = async (req, res) => {
     res
       .status(200)
       .json({ success: true, message: "Email verified successfully" });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+const updateEmail = async (req, res) => {
+  const { email } = req.body;
+
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Access Denied: Log in to update email",
+    });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    user.email = email;
+    await user.save();
+    await sendVerificationEmail(email, user);
+    res
+      .status(200)
+      .json({ success: true, message: "Email updated successfully" });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }

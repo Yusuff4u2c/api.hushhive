@@ -20,12 +20,11 @@ const generateTokenSimple = (payLoad) => {
 };
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  host: process.env.MAILTRAP_HOST,
+  port: process.env.MAILTRAP_PORT,
   auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASSWORD,
+    user: process.env.MAILTRAP_USERNAME,
+    pass: process.env.MAILTRAP_PASSWORD,
   },
 });
 
@@ -38,9 +37,11 @@ const sendVerificationEmail = async (email, user) => {
     subject: "HushHive Email Verification",
     html: `<h1>Welcome to HushHive</h1>
     <p>Click the link below to verify your email</p>
-    <a href="https://api-hushhive.yemscript.com/auth/verify_email?token=${token}">Verify Email</a>`,
+    <a href="http://localhost:3000/api/auth/verify_email?token=${token}">Verify Email</a>`,
   };
-
+  {
+    /* <a href="https://api-hushhive.yemscript.com/auth/verify_email?token=${token}">Verify Email</a>`, */
+  }
   try {
     await transporter.sendMail(mailOptions);
     return { success: true, message: "Email sent successfully" };

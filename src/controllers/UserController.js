@@ -12,8 +12,6 @@ const getUsers = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     const { username } = req.params;
-    console.log("params", req.params);
-
     const user = await User.findOne({ username: username });
     console.log(user);
     res.status(200).json({ status: "success", user });

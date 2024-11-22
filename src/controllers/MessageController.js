@@ -29,7 +29,6 @@ const CreateMessage = async (req, res) => {
 const GetMessages = async (req, res) => {
   try {
     const user = req.user;
-
     if (!user) {
       return res.status(401).json("Access Denied: No token provided");
     }

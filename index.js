@@ -12,7 +12,7 @@ require("dotenv").config();
 const app = express();
 app.use(
   cors({
-    origin: "https://hushhive-frontend.vercel.app",
+    origin: ["https://hushhive-frontend.vercel.app", "http://localhost:5173"],
     credentials: true,
   })
 );
@@ -22,9 +22,13 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-app.use("auth", authRoute);
-app.use("message", messageRoute);
-app.use("user", userRoute);
+app.use((req, res, next) => {
+  console.log(`Request: ${req.method} ${req.originalUrl}`);
+  next();
+});
+app.use("/api/auth", authRoute);
+app.use("/api/messages", messageRoute);
+app.use("/api/users", userRoute);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the chat app");
