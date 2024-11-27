@@ -1,13 +1,15 @@
+const AuthController = require("../controllers/AuthController");
+const userVerification = require("../middleware/isAuthenticated");
+const router = require("express").Router();
+
 const {
   Register,
   Login,
   Logout,
-  handleRefreshToken,
   VerifyEmail,
+  handleRefreshToken,
   changePassword,
-} = require("../controllers/AuthController");
-const userVerification = require("../middleware/AuthMiddleware");
-const router = require("express").Router();
+} = AuthController;
 
 router.post("/register", Register);
 router.post("/login", Login);

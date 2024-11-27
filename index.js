@@ -6,6 +6,7 @@ const messageRoute = require("./src/routes/MessageRoute");
 const userRoute = require("./src/routes/UserRoute");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const errorMiddleware = require("./src/middleware/errorHandler");
 
 require("dotenv").config();
 
@@ -21,11 +22,6 @@ connectDB();
 app.use(express.json());
 
 app.use(cookieParser());
-
-app.use((req, res, next) => {
-  console.log(`Request: ${req.method} ${req.originalUrl}`);
-  next();
-});
 app.use("/api/auth", authRoute);
 app.use("/api/messages", messageRoute);
 app.use("/api/users", userRoute);
@@ -33,6 +29,8 @@ app.use("/api/users", userRoute);
 app.get("/", (req, res) => {
   res.send("Welcome to the chat app");
 });
+
+app.use(errorMiddleware);
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");

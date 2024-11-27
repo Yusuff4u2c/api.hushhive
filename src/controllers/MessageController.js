@@ -1,65 +1,69 @@
+const Exception = require("../exceptions/exceptions");
 const Message = require("../models/Message");
 const User = require("../models/User");
+const { StatusCodes } = require("http-status-codes");
 
-const CreateMessage = async (req, res) => {
+const CreateMessage = async (req, res, next) => {
   try {
     const { message, username } = req.body;
 
     const user = await User.findOne({ username: username });
 
     if (!user) {
-      return res.status(400).json({
+      throw new Exception({
+        code: StatusCodes.NOT_FOUND,
         message: "User not found",
-        success: false,
       });
     }
 
     const newMessage = new Message({ message, receiverId: user._id });
     await newMessage.save();
-    res.status(201).json({
+    res.status(StatusCodes.OK).json({
       message: "Message created successfully",
       success: true,
-      newMessage,
     });
   } catch (error) {
-    res.status(400).send(error.message);
+    next(error);
   }
 };
 
-const GetMessages = async (req, res) => {
+const GetMessages = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) {
-      return res.status(401).json("Access Denied: No token provided");
+      throw new Exception({
+        code: StatusCodes.BAD_REQUEST,
+        message: "Access Denied: Log in to view messages",
+      });
     }
 
     const messages = await Message.find({
       receiverId: user.id,
     });
-    res.status(200).json({ messages });
+    res.status(StatusCodes.OK).json({ success: true, messages });
   } catch (error) {
-    res.status(400).send(error.message);
+    next(error);
   }
 };
 
-const GetMessage = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const message = await Message.findById(id);
-    res.status(200).json({ message });
-  } catch (error) {
-    res.status(400).send(error.message);
-  }
-};
+// const GetMessage = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const message = await Message.findById(id);
+//     res.status(200).json({ message });
+//   } catch (error) {
+//     res.status(400).send(error.message);
+//   }
+// };
 
-const DeleteMessage = async (req, res) => {
+const DeleteMessage = async (req, res, next) => {
   try {
     const { id } = req.params;
     const message = await Message.findByIdAndDelete(id);
-    res.status(200).json({ message });
+    res.status(StatusCodes.OK).json({ success: true, message });
   } catch (error) {
-    res.status(400).send(error.message);
+    next(error);
   }
 };
 
-module.exports = { CreateMessage, GetMessages, GetMessage, DeleteMessage };
+module.exports = { CreateMessage, GetMessages, DeleteMessage };

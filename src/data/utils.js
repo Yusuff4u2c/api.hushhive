@@ -51,4 +51,8 @@ const sendVerificationEmail = async (email, user) => {
   }
 };
 
-module.exports = { generateToken, generateTokenSimple, sendVerificationEmail };
+module.exports = {
+  generateToken,
+  generateTokenSimple,
+  sendVerificationEmail,
+};
