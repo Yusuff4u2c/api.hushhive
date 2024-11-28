@@ -46,15 +46,13 @@ const sendVerificationEmail = async (email, user) => {
   //   Verify Email
   // </a>;
   try {
-    await transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error.message);
-        return { success: false, message: error.message };
-      } else {
-        console.log("Email sent: " + info.response);
-        return { success: true, message: "Email sent" };
-      }
-    });
+    const sendEmail = await transporter.sendMail(mailOptions);
+    console.log("Message sent: %s", sendEmail.messageId);
+    if (sendEmail.messageId) {
+      return { success: true, message: "Email sent" };
+    } else {
+      return { success: false, message: "Email not sent" };
+    }
   } catch (error) {
     console.log(error.message);
     return { success: false, message: error.message };
