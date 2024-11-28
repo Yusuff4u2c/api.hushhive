@@ -139,7 +139,7 @@ const sendVerificationEmail = async (email, user) => {
                                                     <table class="mobile-wide" border="0" cellspacing="0" cellpadding="0" role="presentation" style="border-collapse:collapse;" >
                                                         <tr>
                                                             <td align="center" class="btn" style="word-break:break-word;font-family:'Inter', Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;background-color:#696cff;box-shadow:0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);border-radius:3px;" >
-                                                                <a href="https://api-hushhive.yemscript.com/api/auth/verify_email?token=${token}" target="_blank" style="background-color:#696cff;padding-top:14px;padding-bottom:14px;padding-right:30px;padding-left:30px;display:inline-block;color:#FFF;text-decoration:none;border-radius:3px;-webkit-text-size-adjust:none;box-sizing:border-box;border-width:0px;border-style:solid;border-color:#696cff;font-weight:600;font-size:15px;line-height:21px;letter-spacing:0.25px;" >Verify Email</a>
+                                                                <a href="https://hushhive.yemscript.com/auth/verify-email?token=${token}" target="_blank" style="background-color:#696cff;padding-top:14px;padding-bottom:14px;padding-right:30px;padding-left:30px;display:inline-block;color:#FFF;text-decoration:none;border-radius:3px;-webkit-text-size-adjust:none;box-sizing:border-box;border-width:0px;border-style:solid;border-color:#696cff;font-weight:600;font-size:15px;line-height:21px;letter-spacing:0.25px;" >Verify Email</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -167,8 +167,7 @@ const sendVerificationEmail = async (email, user) => {
                                         </table>
 
                                         <p class="small" style="color:#4a5566;margin-top:20px;margin-bottom:20px;margin-right:0;margin-left:0;font-size:14px;line-height:21px;" >If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p>
-                                        <p class="small" style="color:#4a5566;margin-top:20px;margin-bottom:20px;margin-right:0;margin-left:0;font-size:14px;line-height:21px;" >https://api-hushhive.yemscript.com/api/auth/verify_email?token=${token}</p>
-
+                                        <p class="small" style="color:#4a5566;margin-top:20px;margin-bottom:20px;margin-right:0;margin-left:0;font-size:14px;line-height:21px;" >https://hushhive.yemscript.com/auth/verify-email?token=${token}</p>
                                     </td>
                                 </tr>
                             </table>
