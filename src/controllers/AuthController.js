@@ -34,12 +34,12 @@ class AuthController {
       await user.save();
 
       const verificationResult = await sendVerificationEmail(email, user);
-      if (!verificationResult.success) {
-        throw new Exception({
-          code: StatusCodes.INTERNAL_SERVER_ERROR,
-          message: "Failed to send verification email",
-        });
-      }
+      // if (!verificationResult.success) {
+      //   throw new Exception({
+      //     code: StatusCodes.INTERNAL_SERVER_ERROR,
+      //     message: "Failed to send verification email",
+      //   });
+      // }
 
       res.status(StatusCodes.CREATED).json({
         success: true,

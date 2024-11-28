@@ -7,6 +7,7 @@ const userRoute = require("./src/routes/UserRoute");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const errorMiddleware = require("./src/middleware/errorHandler");
+const net = require("net");
 
 require("dotenv").config();
 
@@ -31,7 +32,41 @@ app.use("/api/messages", messageRoute);
 app.use("/api/users", userRoute);
 
 app.get("/", (req, res) => {
-  res.send("Welcome to the chat app");
+  // res.send("Welcome to the chat app");
+  const host = "smtp.mailtrap.io"; // Replace with the server's address
+  const port = 2525; // Replace with the port number to check
+
+  (async () => {
+    const socket = new net.Socket();
+
+    const isPortOpen = await new Promise((resolve) => {
+      socket.setTimeout(2000); // Set a timeout for the connection
+
+      socket.connect(port, host, () => {
+        socket.destroy(); // Close the connection
+        resolve(true); // Port is open
+      });
+
+      socket.on("error", () => {
+        socket.destroy();
+        // Close the connection on error
+        resolve(false); // Port is closed
+      });
+
+      socket.on("timeout", () => {
+        socket.destroy(); // Close the connection on timeout
+        resolve(false); // Port is closed due to timeout
+      });
+    });
+
+    if (isPortOpen) {
+      res.send(`Port ${port} on ${host} is OPEN.`);
+      console.log(`Port ${port} on ${host} is OPEN.`);
+    } else {
+      res.send(`Port ${port} on ${host} is CLOSED.`);
+      console.log(`Port ${port} on ${host} is CLOSED.`);
+    }
+  })();
 });
 
 app.use(errorMiddleware);

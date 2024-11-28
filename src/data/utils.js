@@ -37,17 +37,17 @@ const sendVerificationEmail = async (email, user) => {
     subject: "HushHive Email Verification",
     html: `<h1>Welcome to HushHive</h1>
     <p>Click the link below to verify your email</p>
-    <a href="http://localhost:3000/api/auth/verify_email?token=${token}">Verify Email</a>`,
+    <a href="https://api-hushhive.yemscript.com/auth/verify_email?token=${token}">Verify Email</a>`,
   };
-  {
-    /* <a href="https://api-hushhive.yemscript.com/auth/verify_email?token=${token}">Verify Email</a>`, */
-  }
+
+  // <a href="http://localhost:3000/api/auth/verify_email?token=${token}">
+  //   Verify Email
+  // </a>;
   try {
     await transporter.sendMail(mailOptions);
-    return { success: true, message: "Email sent successfully" };
   } catch (error) {
-    console.log("Email not sent", error);
-    return { success: false, message: "Email not sent" };
+    console.log(error.message);
+    return { success: false, message: error.message };
   }
 };
 
