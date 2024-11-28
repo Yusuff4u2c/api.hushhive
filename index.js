@@ -13,7 +13,11 @@ require("dotenv").config();
 const app = express();
 app.use(
   cors({
-    origin: ["https://hushhive-frontend.vercel.app", "http://localhost:5173"],
+    origin: [
+      "https://hushhive-frontend.vercel.app",
+      "http://localhost:5173",
+      "https://hushhive.yemscript.com",
+    ],
     credentials: true,
   })
 );

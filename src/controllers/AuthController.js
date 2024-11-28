@@ -161,7 +161,7 @@ class AuthController {
           email: user.email,
           tokenVersion: user.tokenVersion,
         },
-        "2m"
+        "15m"
       );
 
       const refreshToken = generateToken(
