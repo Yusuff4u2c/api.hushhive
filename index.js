@@ -7,7 +7,7 @@ const userRoute = require("./src/routes/UserRoute");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const errorMiddleware = require("./src/middleware/errorHandler");
-
+const port = process.env.PORT || 3000;
 require("dotenv").config();
 
 const app = express();
