@@ -37,7 +37,7 @@ class AuthController {
       if (!verificationResult.success) {
         throw new Exception({
           code: StatusCodes.INTERNAL_SERVER_ERROR,
-          message: "Failed to send verification email",
+          message: verificationResult.message,
         });
       }
 
