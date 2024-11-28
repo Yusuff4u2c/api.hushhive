@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const dotenv = require("dotenv");
+dotenv.config();
 const User = require("../models/User");
 const Exception = require("../exceptions/exceptions");
 const { StatusCodes } = require("http-status-codes");

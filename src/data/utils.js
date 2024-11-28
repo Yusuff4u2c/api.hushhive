@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const jwt_simple = require("jwt-simple");
-require("dotenv").config();
-nodemailer = require("nodemailer");
+const dotenv = require("dotenv");
+dotenv.config();
+const nodemailer = require("nodemailer");
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const generateToken = (user, duration = "15m") => {
@@ -22,7 +23,7 @@ const generateTokenSimple = (payLoad) => {
 const transporter = nodemailer.createTransport({
   host: process.env.MAILTRAP_HOST,
   port: process.env.MAILTRAP_PORT,
-  secure: process.env.MAILTRAP_PORT === 587 ? true : false,
+  secure: process.env.MAILTRAP_PORT === 465 ? true : false,
   auth: {
     user: process.env.MAILTRAP_USERNAME,
     pass: process.env.MAILTRAP_PASSWORD,
