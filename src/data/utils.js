@@ -124,7 +124,9 @@ const sendVerificationEmail = async (email, user) => {
                                             <img src="https://i.ibb.co/qyxFp9H/logo-text.png" width="300px" alt="logo-text" border="0">
                                             </p>
 
-                                        <h1 style="margin-top:0;color:#111111;font-size:24px;line-height:36px;font-weight:600;margin-bottom:24px;" >Hi ${name},</h1>
+                                        <h1 style="margin-top:0;color:#111111;font-size:24px;line-height:36px;font-weight:600;margin-bottom:24px;" >Hi ${
+                                          user.username
+                                        },</h1>
                                         <p style="color:#4a5566;margin-top:20px;margin-bottom:20px;margin-right:0;margin-left:0;font-size:16px;line-height:28px;" >
                                             Welcome to HushHive! We're excited to have you get started. Before you can start using your account, you need to confirm your email address.
                                             </p>
