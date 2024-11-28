@@ -34,7 +34,6 @@ class AuthController {
       await user.save();
 
       const verificationResult = await sendVerificationEmail(email, user);
-      console.log(verificationResult);
       if (!verificationResult?.success) {
         throw new Exception({
           code: StatusCodes.INTERNAL_SERVER_ERROR,
