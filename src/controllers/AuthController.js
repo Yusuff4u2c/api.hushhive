@@ -6,6 +6,8 @@ const { generateToken, sendVerificationEmail } = require("../data/utils");
 const Exception = require("../exceptions/exceptions");
 const { StatusCodes } = require("http-status-codes");
 
+const verifyEmail = process.env.VERIFY_EMAIL === "true";
+
 class AuthController {
   static async Register(req, res, next) {
     try {
@@ -33,14 +35,21 @@ class AuthController {
       const user = new User({ username, password: passwordHash, email });
       await user.save();
 
-      const verificationResult = await sendVerificationEmail(email, user);
-      if (!verificationResult?.success) {
-        throw new Exception({
-          code: StatusCodes.INTERNAL_SERVER_ERROR,
-          message: verificationResult.message,
+      if (!verifyEmail) {
+        res.status(StatusCodes.CREATED).json({
+          success: true,
+          message: "User registered successfully. Proceed to log in.",
         });
+        return;
       }
 
+      await sendVerificationEmail(email, user);
+      // if (!verificationResult?.success) {
+      //   throw new Exception({
+      //     code: StatusCodes.INTERNAL_SERVER_ERROR,
+      //     message: verificationResult.message,
+      //   });
+      // }
       res.status(StatusCodes.CREATED).json({
         success: true,
         message: "User registered successfully. Proceed to log in.",
@@ -146,6 +155,44 @@ class AuthController {
           message: "Incorrect email or password",
         });
       }
+      if (!verifyEmail) {
+        const accessToken = generateToken(
+          {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            tokenVersion: user.tokenVersion,
+          },
+          "15m"
+        );
+
+        const refreshToken = generateToken(
+          {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            tokenVersion: user.tokenVersion,
+          },
+          "7d"
+        );
+
+        res.cookie("refreshToken", refreshToken, {
+          withCredentials: true,
+          httpOnly: true,
+        });
+
+        res.status(StatusCodes.CREATED).json({
+          success: true,
+          message: "User logged in successfully",
+          accessToken,
+          user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+          },
+        });
+        return;
+      }
 
       if (!user.isVerified) {
         throw new Exception({
@@ -161,7 +208,7 @@ class AuthController {
           email: user.email,
           tokenVersion: user.tokenVersion,
         },
-        "15m"
+        "2m"
       );
 
       const refreshToken = generateToken(
@@ -245,16 +292,32 @@ class AuthController {
       if (!refreshToken) {
         throw new Exception({
           code: StatusCodes.BAD_REQUEST,
-          message: "No refresh token provided",
+          message: "No refresh token provided. Already logged out?",
         });
       }
+
       const payload = jwt.verify(refreshToken, process.env.JWT_SECRET);
       const user = await User.findById(payload.id);
+
+      if (!user) {
+        throw new Exception({
+          code: StatusCodes.NOT_FOUND,
+          message: "User not found. Invalid session.",
+        });
+      }
+
       user.tokenVersion += 1;
       await user.save();
+
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+
       res.status(StatusCodes.OK).json({
         success: true,
-        message: "User logged out successfully",
+        message: "User logged out successfully. Refresh token cleared.",
       });
     } catch (error) {
       next(error);

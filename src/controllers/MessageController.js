@@ -30,17 +30,33 @@ const CreateMessage = async (req, res, next) => {
 const GetMessages = async (req, res, next) => {
   try {
     const user = req.user;
+
     if (!user) {
       throw new Exception({
-        code: StatusCodes.BAD_REQUEST,
+        code: StatusCodes.UNAUTHORIZED,
         message: "Access Denied: Log in to view messages",
       });
     }
 
-    const messages = await Message.find({
-      receiverId: user.id,
+    const { page = 1 } = req.query;
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize;
+
+    const messages = await Message.find({ receiverId: user.id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(pageSize));
+
+    const totalMessages = await Message.countDocuments({ receiverId: user.id });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      messages,
+      pagination: {
+        page: parseInt(page),
+        totalPages: Math.ceil(parseInt(totalMessages) / pageSize),
+      },
     });
-    res.status(StatusCodes.OK).json({ success: true, messages });
   } catch (error) {
     next(error);
   }
